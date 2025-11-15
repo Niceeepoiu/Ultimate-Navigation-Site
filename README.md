@@ -13,11 +13,8 @@
 
 * **动态侧边栏分类**:
     * 根据 `data.json` 动态生成无限级分类导航树。
-    * **独立箭头点击**: 分类名称旁的箭头可独立点击，仅用于展开/收起子分类，不会触发资源筛选。
-    * **独立分类点击**: 点击分类名称区域，只会筛选并显示该分类及其子分类下的资源，不会自动展开子分类。
-    * **无子分类不显示箭头**：如果分类下没有子分类，则不显示展开箭头，保持界面简洁。
 * **移动端优化**:
-    * 通过汉堡菜单（<i class="fas fa-bars"></i>）控制侧边栏的收展。
+    * 通过汉堡菜单控制侧边栏的收展。
     * 侧边栏展开时，背景变暗并添加遮罩，用户可点击遮罩层或切换分类后自动隐藏侧边栏。
 * **资源搜索**: 顶部集成快速搜索框，支持对资源标题和描述进行实时过滤。
 * **动态内容加载**: 资源数据与页面结构分离，通过 `data.json` 文件管理所有链接。
@@ -76,11 +73,8 @@ This is a minimalist navigation website built purely with HTML, Tailwind CSS, an
 
 * **Dynamic Sidebar Categories**:
     * Generates an infinite-level category navigation tree dynamically from `data.json`.
-    * **Independent Arrow Click**: The arrow next to the category name can be clicked independently to only expand/collapse subcategories without triggering resource filtering.
-    * **Independent Category Click**: Clicking the category name area will only filter and display resources under that category and its subcategories, without automatically expanding the subcategories.
-    * **No Arrow for No Children**: If a category has no subcategories, the expand arrow is not displayed, ensuring a clean interface.
 * **Mobile Optimization**:
-    * Sidebar visibility is controlled by a hamburger menu button (<i class="fas fa-bars"></i>).
+    * Sidebar visibility is controlled by a hamburger menu button.
     * When the sidebar is open, a darkened backdrop is shown, and the user can click the backdrop or select a category to automatically hide the sidebar.
 * **Resource Search**: A quick search box is integrated at the top, supporting real-time filtering of resource titles and descriptions.
 * **Dynamic Content Loading**: Resource data is separated from the page structure and managed via the `data.json` file for easy maintenance and updates.
@@ -124,3 +118,4 @@ This project is a pure frontend application and requires no backend environment 
 
    > [!WARNING] 
    > It is highly recommended to run the project using the **Live Server** extension in VS Code or any local web server (e.g., `http-server`) to avoid cross-origin issues with local file access (CORS).
+
