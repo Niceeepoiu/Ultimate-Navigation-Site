@@ -58,8 +58,8 @@
 2.  **运行**
 
     直接使用浏览器打开 `index.html` 文件即可。
-
-    > ⚠️ **注意**: 推荐使用 VS Code 的 **Live Server** 扩展或任何本地 Web 服务器（如 `http-server`）来运行项目，以避免本地文件访问的跨域问题。
+   > [!WARNING] 
+   > 推荐使用 VS Code 的 **Live Server** 扩展或任何本地 Web 服务器（如 `http-server`）来运行项目，以避免本地文件访问的跨域问题。
 
 ***
 
@@ -122,4 +122,5 @@ This project is a pure frontend application and requires no backend environment 
 
     You can open the `index.html` file directly in your web browser.
 
-    > ⚠️ **Note**: It is highly recommended to run the project using the **Live Server** extension in VS Code or any local web server (e.g., `http-server`) to avoid cross-origin issues with local file access (CORS).
+   > [!WARNING] 
+   > It is highly recommended to run the project using the **Live Server** extension in VS Code or any local web server (e.g., `http-server`) to avoid cross-origin issues with local file access (CORS).
