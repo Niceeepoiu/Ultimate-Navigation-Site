@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极致导航站</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .overflow-y-auto::-webkit-scrollbar {
+            display: none;
+        }
+        .overflow-y-auto {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .sidebar-hidden {
+            transform: translateX(-100%);
+        }
+        .sidebar-visible {
+            transform: translateX(0);
+        }
+        #backdrop {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        #backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        @media (min-width: 768px) {
+            .sidebar-hidden, .sidebar-visible {
+                transform: translateX(0);
+            }
+            #backdrop {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800 font-sans">
+    
+    <div class="flex min-h-screen">
+        
+        <div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"></div>
+
+        <aside id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-white shadow-2xl p-6 z-20 overflow-y-auto 
+                                    transition-transform duration-300 sidebar-hidden md:sidebar-visible">
+            <h3 class="text-2xl font-bold mb-6 text-gray-700">
+                <i class="fas fa-layer-group mr-2 text-primary"></i> 极致导航
+            </h3>
+            
+            <h4 class="text-lg font-semibold mb-3 text-gray-700 border-t pt-4">导航分类</h4>
+            <div id="category-container" class="flex flex-col gap-1 text-sm category-list">
+                <button data-path="all" class="category-btn w-full px-3 py-2 text-sm rounded transition duration-300 text-left flex items-center bg-primary text-white">
+                    <i class="fa-solid fa-th-list w-5 text-center mr-2 text-white"></i> 全部
+                </button>
+            </div>
+        </aside>
+        
+        <div class="flex-1 md:ml-64 pb-10">
+            
+            <header class="py-6 md:py-12 px-4 text-center">
+                <div class="max-w-6xl mx-auto flex items-center justify-center relative">
+                    <button id="sidebar-toggle" class="absolute left-0 top-1/2 -translate-y-1/2 md:hidden p-2 text-gray-700 hover:text-primary transition duration-200">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+
+                    <h1 class="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-700 mb-0">
+                        <i class="fas fa-star-of-life mr-3"></i> 极致导航站
+                    </h1>
+                </div>
+            </header>
+            
+            <div class="max-w-xl mx-auto px-4 mb-10">
+                <input type="text" id="search-box" placeholder="搜索标题或简介..."
+                    class="w-full p-3 text-base rounded-lg border-2 border-gray-200 focus:border-primary transition duration-200 outline-none text-gray-700 shadow-md">
+            </div>
+
+            <main id="resource-grid" class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 px-4"></main>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'data.json';
+        const grid = document.getElementById('resource-grid');
+        const searchBox = document.getElementById('search-box');
+        const categoryContainer = document.getElementById('category-container');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const backdrop = document.getElementById('backdrop');
+        
+        let categoryTree = []; 
+        let activePath = 'all';
+
+        const DEFAULT_ICON = 'fa-solid fa-link';
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-hidden');
+            sidebar.classList.toggle('sidebar-visible');
+            backdrop.classList.toggle('active');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        backdrop.addEventListener('click', toggleSidebar);
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                categoryTree = await response.json();
+                
+                const treeWrapper = document.createElement('ul');
+                treeWrapper.className = 'flex flex-col gap-1';
+                renderCategoryTree(categoryTree, treeWrapper);
+                categoryContainer.appendChild(treeWrapper);
+                
+                filterAndRenderResources();
+            } catch (error) {
+                grid.innerHTML = '<p class="text-center text-red-500 col-span-full py-12">资源加载失败，请检查 data.json 文件格式。</p>';
+            }
+        }
+
+        function renderCategoryTree(nodes, parentElement, path = '', level = 0) {
+            const ul = document.createElement('ul');
+            ul.className = `pl-${level > 0 ? 4 : 0} flex flex-col gap-1`;
+            
+            nodes.forEach((node, index) => {
+                if (node.type !== 'category') return;
+
+                const li = document.createElement('li');
+                const currentPath = path ? `${path}/${node.name}` : node.name;
+                const categoryChildren = (node.children || []).filter(c => c.type === 'category');
+                const hasChildrenCategories = categoryChildren.length > 0;
+
+                const categoryButton = document.createElement('button');
+                categoryButton.dataset.path = currentPath;
+                categoryButton.className = 'category-btn w-full py-1.5 px-3 transition duration-300 text-left flex items-center text-gray-700 hover:bg-gray-100 rounded group relative';
+
+                categoryButton.innerHTML = `
+                    <i class="${node.icon || 'fa-solid fa-folder'} w-5 text-center mr-2 text-primary"></i> 
+                    <span class="flex-1 text-sm pr-7">${node.name}</span>
+                `;
+                
+                if (hasChildrenCategories) {
+                    const arrowButton = document.createElement('button');
+                    arrowButton.className = 'absolute right-0 top-0 h-full w-8 flex items-center justify-center text-primary hover:bg-gray-200 rounded-r-lg transition duration-200';
+                    arrowButton.innerHTML = '<i class="fas fa-chevron-right text-xs transition-transform duration-300"></i>';
+                    
+                    categoryButton.appendChild(arrowButton);
+
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'max-h-0 overflow-hidden';
+                    
+                    arrowButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        childrenContainer.classList.toggle('max-h-0');
+                        childrenContainer.classList.toggle('max-h-[1000px]');
+                        arrowButton.querySelector('.fa-chevron-right').classList.toggle('rotate-90');
+                    });
+
+                    li.appendChild(childrenContainer);
+
+                    renderCategoryTree(categoryChildren, childrenContainer, currentPath, level + 1);
+                }
+
+                categoryButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    setActiveCategory(currentPath);
+                });
+
+                li.prepend(categoryButton);
+                parentElement.appendChild(li);
+            });
+
+            if (parentElement.tagName !== 'DIV') {
+                parentElement.appendChild(ul);
+            }
+        }
+
+        function setActiveCategory(path) {
+            activePath = path;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white', 'font-semibold');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                
+                const icon = btn.querySelector('i');
+                if (icon && icon.classList.contains('text-white')) {
+                    icon.classList.remove('text-white');
+                    icon.classList.add('text-primary');
+                }
+
+                const arrowBtn = btn.querySelector('.absolute');
+                if (arrowBtn) {
+                    arrowBtn.classList.remove('text-white');
+                    arrowBtn.classList.add('text-primary');
+                    arrowBtn.classList.add('hover:bg-gray-200');
+                }
+            });
+
+            const activeBtn = document.querySelector(`.category-btn[data-path="${path}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                activeBtn.classList.add('bg-primary', 'text-white', 'font-semibold');
+
+                const icon = activeBtn.querySelector('i:not(.fa-chevron-right)');
+                if (icon) {
+                    icon.classList.remove('text-primary');
+                    icon.classList.add('text-white');
+                }
+
+                const arrowBtn = activeBtn.querySelector('.absolute');
+                if (arrowBtn) {
+                    arrowBtn.classList.remove('text-primary', 'hover:bg-gray-200');
+                    arrowBtn.classList.add('text-white', 'hover:bg-blue-700');
+                }
+            
+                let current = activeBtn.parentElement;
+                while (current && current.parentElement.parentElement && current.parentElement.parentElement.tagName !== 'DIV') {
+                    const childrenDiv = current.parentElement.parentElement;
+                    if (childrenDiv.classList.contains('max-h-0')) {
+                        childrenDiv.classList.remove('max-h-0');
+                        childrenDiv.classList.add('max-h-[1000px]');
+                    }
+                    const parentBtn = childrenDiv.previousElementSibling;
+                    if (parentBtn && parentBtn.querySelector('.fa-chevron-right')) {
+                        parentBtn.querySelector('.fa-chevron-right').classList.add('rotate-90');
+                    }
+                    current = current.parentElement.parentElement.parentElement;
+                }
+
+            } else if (path === 'all') {
+                 const allBtn = document.querySelector('.category-btn[data-path="all"]');
+                 allBtn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                 allBtn.classList.add('bg-primary', 'text-white', 'font-semibold');
+                 allBtn.querySelector('i').classList.remove('text-primary');
+                 allBtn.querySelector('i').classList.add('text-white');
+            }
+            
+            filterAndRenderResources();
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        function getAllResourcesAndSearch(nodes, searchTerm, pathPrefix = '') {
+            let results = [];
+            nodes.forEach(node => {
+                const currentPath = pathPrefix ? `${pathPrefix}/${node.name}` : node.name;
+
+                if (node.type === 'resource') {
+                    const matchTitle = node.title.toLowerCase().includes(searchTerm);
+                    const matchDescription = node.description.toLowerCase().includes(searchTerm);
+                    if (matchTitle || matchDescription) {
+                        results.push({ ...node, fullPath: currentPath });
+                    }
+                } else if (node.type === 'category' && node.children) {
+                    results = results.concat(getAllResourcesAndSearch(node.children, searchTerm, currentPath));
+                }
+            });
+            return results;
+        }
+
+        function filterAndRenderResources() {
+            const searchTerm = searchBox.value.toLowerCase();
+            
+            let filteredResources = getAllResourcesAndSearch(categoryTree, searchTerm);
+
+            if (activePath !== 'all') {
+                filteredResources = filteredResources.filter(resource => {
+                    return resource.fullPath.startsWith(activePath);
+                });
+            }
+
+            grid.innerHTML = '';
+            if (filteredResources.length === 0) {
+                grid.innerHTML = '<p class="text-center text-xl text-gray-500 col-span-full py-12">未找到匹配的资源。</p>';
+                return;
+            }
+
+            filteredResources.forEach((resource, index) => {
+                const card = document.createElement('div');
+                
+                card.className = `resource-card opacity-0 translate-y-4 p-6 bg-white rounded-xl shadow-lg border border-gray-100 
+                                  transition duration-500 transform ease-out`;
+                
+                const resourceIcon = resource.icon || DEFAULT_ICON;
+                let iconHtml = '';
+                if (resourceIcon.startsWith('fa-')) {
+                    iconHtml = `<i class="${resourceIcon} text-2xl text-primary mr-3"></i>`;
+                } else {
+                    iconHtml = `<span class="text-2xl mr-3">${resourceIcon}</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        ${iconHtml}
+                        <h2 class="text-xl font-bold text-gray-800">${resource.title}</h2>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">${resource.description}</p>
+                    
+                    <a href="${resource.url}" target="_blank" 
+                       class="inline-flex items-center justify-center w-full px-4 py-2 text-base font-medium text-white bg-primary rounded-lg 
+                              hover:bg-blue-700 transition duration-300 transform hover:scale-[1.01]">
+                        <i class="fas fa-external-link-alt mr-2"></i> 访问链接
+                    </a>
+                `;
+                grid.appendChild(card);
+
+                setTimeout(() => {
+                    card.classList.remove('opacity-0', 'translate-y-4');
+                }, index * 50); 
+            });
+        }
+
+        searchBox.addEventListener('input', () => {
+            setActiveCategory('all');
+            filterAndRenderResources();
+        });
+
+        document.querySelector('.category-btn[data-path="all"]').addEventListener('click', () => {
+            setActiveCategory('all');
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>

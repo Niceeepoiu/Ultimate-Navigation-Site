@@ -1,0 +1,79 @@
+[
+  {
+    "name": "工具",
+    "type": "category",
+    "icon": "fa-solid fa-screwdriver-wrench",
+    "children": [
+      {
+        "name": "搜索引擎",
+        "type": "category",
+        "icon": "fa-solid fa-magnifying-glass",
+        "children": [
+          {
+            "title": "Google",
+            "url": "https://www.google.com/",
+            "description": "全球最大的搜索引擎，信息搜索的起点。",
+            "type": "resource",
+            "icon": "fa-brands fa-google"
+          },
+          {
+            "title": "Bing",
+            "url": "https://www.bing.com/",
+            "description": "微软旗下的搜索引擎，提供多样化的搜索服务。",
+            "type": "resource",
+            "icon": "fa-brands fa-microsoft"
+          }
+        ]
+      },
+      {
+        "name": "日常工具",
+        "type": "category",
+        "icon": "fa-solid fa-flask",
+        "children": [
+          {
+            "title": "在线翻译",
+            "url": "https://translate.google.com/",
+            "description": "谷歌在线翻译工具。",
+            "type": "resource",
+            "icon": "fa-solid fa-language"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "开发",
+    "type": "category",
+    "icon": "fa-solid fa-code",
+    "children": [
+      {
+        "title": "GitHub",
+        "url": "https://github.com/",
+        "description": "面向开源及私有软件项目的托管平台。",
+        "type": "resource",
+        "icon": "fa-brands fa-github"
+      }
+    ]
+  },
+  {
+    "name": "学习",
+    "type": "category",
+    "icon": "fa-solid fa-book-atlas",
+    "children": [
+      {
+        "title": "MDN Web Docs",
+        "url": "https://developer.mozilla.org/",
+        "description": "面向 Web 开发者的权威文档。",
+        "type": "resource",
+        "icon": "fa-solid fa-book-open"
+      },
+      {
+        "title": "Stack Overflow",
+        "url": "https://stackoverflow.com/",
+        "description": "程序员问答社区，解决代码难题。",
+        "type": "resource",
+        "icon": "fa-brands fa-stack-overflow"
+      }
+    ]
+  }
+]
